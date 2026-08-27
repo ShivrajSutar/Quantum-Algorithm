@@ -1,0 +1,9 @@
+{
+  "name": "quantum-algo",
+  "version": "1.0.0",
+  "description": "Interactive Quantum Algorithm Simulator and Learning Platform Engine",
+  "type": "module",
+  "scripts": {
+    "test": "node test_simulation.js"
+  }
+}
