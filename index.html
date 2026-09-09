@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>QuantumAlgo - Interactive Quantum Algorithm Learning Platform</title>
   <link rel="stylesheet" href="./src/styles.css?v=5">
+  <link rel="stylesheet" href="./src/auth-styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -22,6 +23,9 @@
       </div>
 
       <div class="header-actions">
+        <div id="user-info" style="display: none; margin-right: 12px;">
+          <span class="user-badge">👤 <span id="username-display"></span></span>
+        </div>
         <select id="preset-selector" class="preset-select">
           <option value="">⚡ Load Algorithm Preset...</option>
           <option value="bell_phi_plus">Bell State |Φ⁺⟩ (|00⟩ + |11⟩)/√2</option>
@@ -31,6 +35,8 @@
           <option value="deutsch_jozsa">Deutsch-Jozsa Algorithm (Balanced Oracle)</option>
           <option value="grover_2qubit">Grover's Search (2-Qubit Oracle & Diffusion)</option>
         </select>
+        <button id="login-btn" class="btn btn-primary">🔐 Login</button>
+        <button id="logout-btn" class="btn btn-secondary" style="display: none;">Logout</button>
         <button id="clear-circuit-btn" class="btn btn-secondary">🗑️ Clear Grid</button>
       </div>
     </header>
@@ -117,6 +123,6 @@
     </section>
   </div>
 
-  <script type="module" src="./src/app.js?v=5"></script>
+  <script type="module" src="./src/app.js?v=6"></script>
 </body>
 </html>

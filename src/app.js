@@ -10,8 +10,16 @@ import { AlgorithmPresets } from './core/AlgorithmPresets.js';
 import { BlochSphere3D } from './visualizers/BlochSphere3D.js';
 import { PhaseDiskVisualizer } from './visualizers/PhaseDiskVisualizer.js';
 import { StateBarChart } from './visualizers/StateBarChart.js';
+import { AuthManager } from './auth/AuthManager.js';
+import { AuthModal } from './components/AuthModal.js';
+import { VerificationModal } from './components/VerificationModal.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize Authentication
+  const authManager = new AuthManager();
+  const verificationModal = new VerificationModal(authManager);
+  const authModal = new AuthModal(authManager, verificationModal);
+
   // DOM Containers
   const gridContainer = document.getElementById('circuit-grid-container');
   const codeContainer = document.getElementById('code-viewer-container');
@@ -30,6 +38,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const stepPrevBtn = document.getElementById('step-prev-btn');
   const stepNextBtn = document.getElementById('step-next-btn');
   const stepLabel = document.getElementById('step-label');
+
+  // Auth UI Elements
+  const loginBtn = document.getElementById('login-btn');
+  const logoutBtn = document.getElementById('logout-btn');
+  const userInfo = document.getElementById('user-info');
+  const usernameDisplay = document.getElementById('username-display');
 
   // Initialize Visualizers
   const phaseDisk = new PhaseDiskVisualizer(phaseDiskContainer);
@@ -181,6 +195,64 @@ document.addEventListener('DOMContentLoaded', () => {
   stepNextBtn.addEventListener('click', () => {
     circuitGrid.setStep(circuitGrid.currentStep + 1);
   });
+
+  // Auth Event Handlers
+  loginBtn.addEventListener('click', () => {
+    authModal.show('login', (user) => {
+      updateAuthUI();
+      loadUserProgress();
+    });
+  });
+
+  logoutBtn.addEventListener('click', () => {
+    authManager.logout();
+    updateAuthUI();
+  });
+
+  // Update UI based on auth state
+  function updateAuthUI() {
+    const user = authManager.getCurrentUser();
+    if (authManager.isAuthenticated() && user) {
+      loginBtn.style.display = 'none';
+      logoutBtn.style.display = 'inline-block';
+      userInfo.style.display = 'block';
+      usernameDisplay.textContent = user.username;
+    } else {
+      loginBtn.style.display = 'inline-block';
+      logoutBtn.style.display = 'none';
+      userInfo.style.display = 'none';
+    }
+  }
+
+  // Load user progress from server
+  async function loadUserProgress() {
+    const result = await authManager.loadProgress();
+    if (result.success && result.progress.circuitData) {
+      // Restore circuit state if available
+      console.log('User progress loaded:', result.progress);
+    }
+  }
+
+  // Auto-save progress every 30 seconds if logged in
+  setInterval(async () => {
+    if (authManager.isAuthenticated()) {
+      const progressData = {
+        circuitData: {
+          numQubits: circuitGrid.numQubits,
+          gates: circuitGrid.gates
+        },
+        challengesCompleted: [], // Will be populated by AITutorPanel
+        lecturesViewed: [] // Will be populated by VideoLectureHub
+      };
+      await authManager.saveProgress(progressData);
+    }
+  }, 30000);
+
+  // Initialize auth UI
+  updateAuthUI();
+  if (authManager.isAuthenticated()) {
+    loadUserProgress();
+  }
 
   // Load default Bell State preset to start
   syncBlochSpheresCount(2);

@@ -4,6 +4,17 @@
   "description": "Interactive Quantum Algorithm Simulator and Learning Platform Engine",
   "type": "module",
   "scripts": {
-    "test": "node test_simulation.js"
+    "test": "node test_simulation.js",
+    "server": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.9.7",
+    "sql.js": "^1.8.0"
   }
 }

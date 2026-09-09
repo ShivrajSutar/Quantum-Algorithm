@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Email Verification</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 40px; background: #0a0f1d; color: #fff; }
+    .container { max-width: 500px; margin: 0 auto; }
+    input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #38bdf8; background: #1a1f3d; color: #fff; }
+    button { width: 100%; padding: 12px; background: #38bdf8; color: #000; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 10px 0; }
+    button:hover { background: #0ea5e9; }
+    .response { margin-top: 20px; padding: 15px; background: #1a1f3d; border-radius: 5px; border: 1px solid #38bdf8; }
+    .error { border-color: #f43f5e; color: #f43f5e; }
+    .success { border-color: #10b981; color: #10b981; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔐 Test Email Verification</h1>
+
+    <h3>Step 1: Register</h3>
+    <input type="text" id="username" placeholder="Username" value="testuser2">
+    <input type="email" id="email" placeholder="Email" value="shivraj.sutar27@gmail.com">
+    <input type="password" id="password" placeholder="Password" value="password123">
+    <button onclick="register()">Register</button>
+    <div id="register-response" class="response" style="display:none;"></div>
+
+    <h3>Step 2: Verify Email</h3>
+    <input type="text" id="userId" placeholder="User ID (from registration)">
+    <input type="text" id="code" placeholder="6-digit code from email" maxlength="6">
+    <button onclick="verify()">Verify Email</button>
+    <div id="verify-response" class="response" style="display:none;"></div>
+
+    <h3>Step 3: Login</h3>
+    <input type="text" id="loginUsername" placeholder="Username">
+    <input type="password" id="loginPassword" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <div id="login-response" class="response" style="display:none;"></div>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:3000/api';
+
+    async function register() {
+      const username = document.getElementById('username').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const responseDiv = document.getElementById('register-response');
+
+      try {
+        const response = await fetch(`${API_URL}/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password })
+        });
+
+        const data = await response.json();
+        responseDiv.style.display = 'block';
+
+        if (response.ok) {
+          responseDiv.className = 'response success';
+          responseDiv.innerHTML = `
+            <strong>✅ Registration successful!</strong><br>
+            User ID: ${data.userId}<br>
+            Email: ${data.email}<br>
+            <br><strong>Check your email for the verification code!</strong>
+          `;
+          document.getElementById('userId').value = data.userId;
+        } else {
+          responseDiv.className = 'response error';
+          responseDiv.innerHTML = `<strong>❌ Error:</strong> ${data.error}`;
+        }
+      } catch (error) {
+        responseDiv.style.display = 'block';
+        responseDiv.className = 'response error';
+        responseDiv.innerHTML = `<strong>❌ Network Error:</strong> ${error.message}`;
+      }
+    }
+
+    async function verify() {
+      const userId = document.getElementById('userId').value;
+      const code = document.getElementById('code').value;
+      const responseDiv = document.getElementById('verify-response');
+
+      try {
+        const response = await fetch(`${API_URL}/verify-email`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: parseInt(userId), code })
+        });
+
+        const data = await response.json();
+        responseDiv.style.display = 'block';
+
+        if (response.ok) {
+          responseDiv.className = 'response success';
+          responseDiv.innerHTML = `
+            <strong>✅ Email verified!</strong><br>
+            Username: ${data.user.username}<br>
+            Token: ${data.token.substring(0, 20)}...<br>
+            <br><strong>You can now login!</strong>
+          `;
+        } else {
+          responseDiv.className = 'response error';
+          responseDiv.innerHTML = `<strong>❌ Error:</strong> ${data.error}`;
+        }
+      } catch (error) {
+        responseDiv.style.display = 'block';
+        responseDiv.className = 'response error';
+        responseDiv.innerHTML = `<strong>❌ Network Error:</strong> ${error.message}`;
+      }
+    }
+
+    async function login() {
+      const username = document.getElementById('loginUsername').value;
+      const password = document.getElementById('loginPassword').value;
+      const responseDiv = document.getElementById('login-response');
+
+      try {
+        const response = await fetch(`${API_URL}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+        responseDiv.style.display = 'block';
+
+        if (response.ok) {
+          responseDiv.className = 'response success';
+          responseDiv.innerHTML = `
+            <strong>✅ Login successful!</strong><br>
+            Username: ${data.user.username}<br>
+            Email: ${data.user.email}<br>
+            Token: ${data.token.substring(0, 20)}...
+          `;
+        } else {
+          responseDiv.className = 'response error';
+          responseDiv.innerHTML = `<strong>❌ Error:</strong> ${data.error}`;
+
+          if (data.requiresVerification) {
+            responseDiv.innerHTML += `<br><br><strong>⚠️ Email not verified!</strong><br>User ID: ${data.userId}<br>Email: ${data.email}`;
+            document.getElementById('userId').value = data.userId;
+          }
+        }
+      } catch (error) {
+        responseDiv.style.display = 'block';
+        responseDiv.className = 'response error';
+        responseDiv.innerHTML = `<strong>❌ Network Error:</strong> ${error.message}`;
+      }
+    }
+  </script>
+</body>
+</html>
